@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  vmagent:
+    container_name: vmagent
+    image: victoriametrics/vmagent:v1.77.2
+    ports:
+      - 8429:8429
+    volumes:
+      - ./data/vmagent:/vmagentdata
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--promscrape.config=/etc/prometheus/prometheus.yml"
+      - "--remoteWrite.url=http://vminsert:8480/insert/0/prometheus/api/v1/write"
+    restart: always
+    networks:
+      agent_net:
+
+networks:
+  agent_net:
+    external:
+      name: victoria-metrics_vm_net

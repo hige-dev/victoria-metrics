@@ -1,0 +1,56 @@
+version: "3.7"
+
+services:
+  vminsert:
+    container_name: vminsert
+    image: victoriametrics/vminsert:v1.77.2-cluster
+    ports:
+      - 8480:8480
+    command:
+      - "--storageNode=vmstorage"
+    networks:
+      - vm_net
+    depends_on:
+      - vmstorage
+    restart: always
+  vmstorage:
+    container_name: vmstorage
+    ports:
+      - 8482:8482
+    image: victoriametrics/vmstorage:v1.77.2-cluster
+    volumes:
+      - ./data/vmstorage:/storage
+    command:
+      - "--retentionPeriod=100d"
+      - "--storageDataPath=/storage"
+    networks:
+      - vm_net
+    restart: always
+  vmselect:
+    container_name: vmselect
+    image: victoriametrics/vmselect:v1.77.2-cluster
+    ports:
+      - 8481:8481
+    command:
+      - "--storageNode=vmstorage"
+    depends_on:
+      - vmstorage
+    networks:
+      - vm_net
+    restart: always
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    depends_on:
+      - "vmselect"
+    ports:
+      - 3000:3000
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+      - ./datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+    networks:
+      - vm_net
+    restart: always
+
+networks:
+  vm_net:

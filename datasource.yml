@@ -1,0 +1,5 @@
+datasources:
+  - name: vmselect
+    type: prometheus
+    access: proxy
+    url: "http://vmselect:8481/select/0/prometheus"
